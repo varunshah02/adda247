@@ -9,6 +9,7 @@ import Header from './components/layout/Header';
 function AppContent() {
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showMenu, setShowMenu] = useState(true); // default: visible on desktop
 
   if (!isAuthenticated) {
     return <LoginPage />;
@@ -16,10 +17,22 @@ function AppContent() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Sidebar */}
+      {showMenu && (
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          showMenu={showMenu}
+          setShowMenu={setShowMenu}
+        />
+      )}
+
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="flex-1 overflow-auto">
+        <Header 
+        showMenu={showMenu}
+        setShowMenu={setShowMenu} />
+        <main className="flex-1 overflow-auto p-4">
           {user?.role === 'business' ? (
             <BusinessDashboard activeTab={activeTab} setActiveTab={setActiveTab} />
           ) : (

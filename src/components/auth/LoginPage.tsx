@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { GraduationCap, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import Logo from '../../assets/header-logo.png';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
@@ -38,10 +39,14 @@ const LoginPage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm border border-red-100">
           {/* Logo and Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-              <GraduationCap className="w-8 h-8 text-red-600" />
+            <div className="inline-flex items-center justify-center">
+              <img
+                src={Logo}
+                alt="EduTracker Logo"
+                className="w-[50] h-[50] object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">EduTracker</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Adda247</h1>
             <p className="text-gray-600">Lecture Management System</p>
           </div>
 

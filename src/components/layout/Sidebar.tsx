@@ -1,22 +1,25 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  BookOpen, 
-  Calendar, 
-  BarChart3, 
-  GraduationCap,
+import {
+  LayoutDashboard,
+  Users,
+  BookOpen,
+  Calendar,
+  BarChart3,
   CheckSquare,
-  Clock
+  Clock,
+  X
 } from 'lucide-react';
+import Logo from '../../assets/header-logo.png';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  showMenu: boolean;
+  setShowMenu: (val: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, setShowMenu }) => {
   const { user } = useAuth();
 
   const businessMenuItems = [
@@ -39,17 +42,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
 
   return (
     <div className="w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-red-600" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">EduTracker</h1>
-            <p className="text-xs text-gray-600">Learning Management</p>
-          </div>
-        </div>
+      {/* Logo + Close button */}
+      <div className="p-6 border-b border-gray-200 flex justify-evenly items-center">
+        <img src={Logo} alt="EduTracker Logo" className="w-[50] h-[50] object-contain" />
+        <button
+          onClick={() => setShowMenu(false)}
+          className="lg:hidden rounded hover:bg-gray-100 relative mr-0 ms-2"
+        >
+          <X className="w-6 h-6" />
+        </button>
       </div>
 
       {/* Navigation */}
