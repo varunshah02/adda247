@@ -46,7 +46,6 @@ const LoginPage: React.FC = () => {
                 className="w-[50] h-[50] object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Adda247</h1>
             <p className="text-gray-600">Lecture Management System</p>
           </div>
 
