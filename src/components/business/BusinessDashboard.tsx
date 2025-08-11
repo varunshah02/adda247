@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardOverview from './DashboardOverview';
 import TeacherManagement from './TeacherManagement';
 import CourseManagement from './CourseManagement';
@@ -6,13 +7,22 @@ import BatchManagement from './BatchManagement';
 import LectureTracking from './LectureTracking';
 import Analytics from './Analytics';
 
-interface BusinessDashboardProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
+const BusinessDashboard: React.FC = () => {
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    const path = location.pathname;
+    if (path === '/teachers') return 'teachers';
+    if (path === '/courses') return 'courses';
+    if (path === '/batches') return 'batches';
+    if (path === '/lectures') return 'lectures';
+    if (path === '/analytics') return 'analytics';
+    return 'dashboard';
+  };
 
-const BusinessDashboard: React.FC<BusinessDashboardProps> = ({ activeTab }) => {
   const renderContent = () => {
+    const activeTab = getActiveTab();
+    
     switch (activeTab) {
       case 'dashboard':
         return <DashboardOverview />;
@@ -31,7 +41,11 @@ const BusinessDashboard: React.FC<BusinessDashboardProps> = ({ activeTab }) => {
     }
   };
 
-  return <div className="p-6">{renderContent()}</div>;
+  return (
+    <div className="p-3 sm:p-4 lg:p-6 max-w-full">
+      {renderContent()}
+    </div>
+  );
 };
 
 export default BusinessDashboard;

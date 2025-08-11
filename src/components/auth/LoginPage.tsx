@@ -35,22 +35,25 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8 backdrop-blur-sm border border-red-100">
+      <div className="w-full max-w-sm sm:max-w-md">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 backdrop-blur-sm border border-red-100">
           {/* Logo and Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center">
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center mb-4">
               <img
                 src={Logo}
                 alt="EduTracker Logo"
-                className="w-[50] h-[50] object-contain"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
             </div>
-            <p className="text-gray-600">Lecture Management System</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">Lecture Management System</p>
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -61,7 +64,7 @@ const LoginPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                   placeholder="Enter your email"
                   required
                 />
@@ -78,7 +81,7 @@ const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
                   placeholder="Enter your password"
                   required
                 />
@@ -101,7 +104,7 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -115,7 +118,7 @@ const LoginPage: React.FC = () => {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
             <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Credentials:</h3>
             <div className="space-y-2">
               {demoCredentials.map((cred, index) => (
@@ -128,7 +131,7 @@ const LoginPage: React.FC = () => {
                   className="p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
                 >
                   <div className="text-sm font-medium text-gray-900">{cred.role}</div>
-                  <div className="text-xs text-gray-600">{cred.email}</div>
+                  <div className="text-xs text-gray-600 truncate">{cred.email}</div>
                 </div>
               ))}
             </div>

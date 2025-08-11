@@ -1,16 +1,24 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import TeacherOverview from './TeacherOverview';
 import MyCourses from './MyCourses';
 import MyLectures from './MyLectures';
 import Progress from './Progress';
 
-interface TeacherDashboardProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-}
+const TeacherDashboard: React.FC = () => {
+  const location = useLocation();
+  
+  const getActiveTab = () => {
+    const path = location.pathname;
+    if (path === '/my-courses') return 'my-courses';
+    if (path === '/lectures') return 'lectures';
+    if (path === '/progress') return 'progress';
+    return 'dashboard';
+  };
 
-const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ activeTab }) => {
   const renderContent = () => {
+    const activeTab = getActiveTab();
+    
     switch (activeTab) {
       case 'dashboard':
         return <TeacherOverview />;
@@ -25,7 +33,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ activeTab }) => {
     }
   };
 
-  return <div className="p-6">{renderContent()}</div>;
+  return (
+    <div className="p-3 sm:p-4 lg:p-6 max-w-full">
+      {renderContent()}
+    </div>
+  );
 };
 
 export default TeacherDashboard;

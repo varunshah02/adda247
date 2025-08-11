@@ -79,23 +79,23 @@ const DashboardOverview: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
-        <p className="text-gray-600">Monitor your institution's performance at a glance</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
+        <p className="text-sm sm:text-base text-gray-600">Monitor your institution's performance at a glance</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
-                <stat.icon className="w-6 h-6" />
+          <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow duration-200">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className={`p-2 sm:p-3 rounded-lg ${getColorClasses(stat.color)}`}>
+                <stat.icon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
               <p className="text-sm font-medium text-gray-600 mb-2">{stat.title}</p>
               <p className="text-xs text-gray-500">{stat.change}</p>
             </div>
@@ -105,14 +105,14 @@ const DashboardOverview: React.FC = () => {
 
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
         </div>
-        <div className="p-6">
-          <div className="space-y-4">
+        <div className="p-4 sm:p-6">
+          <div className="space-y-3 sm:space-y-4">
             {recentActivity.map((activity) => (
               <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className={`p-2 rounded-full bg-gray-100 ${activity.color}`}>
+                <div className={`p-2 rounded-full bg-gray-100 ${activity.color} flex-shrink-0`}>
                   <activity.icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -126,23 +126,23 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <button className="p-4 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-left">
-            <Users className="w-6 h-6 text-red-600 mb-2" />
-            <h3 className="font-medium text-gray-900">Add Teacher</h3>
-            <p className="text-sm text-gray-600">Register a new faculty member</p>
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 mb-2" />
+            <h3 className="font-medium text-gray-900 text-sm sm:text-base">Add Teacher</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Register a new faculty member</p>
           </button>
           <button className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-left">
-            <BookOpen className="w-6 h-6 text-blue-600 mb-2" />
-            <h3 className="font-medium text-gray-900">Create Course</h3>
-            <p className="text-sm text-gray-600">Design a new curriculum</p>
+            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 mb-2" />
+            <h3 className="font-medium text-gray-900 text-sm sm:text-base">Create Course</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Design a new curriculum</p>
           </button>
-          <button className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors text-left">
-            <Calendar className="w-6 h-6 text-green-600 mb-2" />
-            <h3 className="font-medium text-gray-900">New Batch</h3>
-            <p className="text-sm text-gray-600">Start a new learning batch</p>
+          <button className="p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors text-left sm:col-span-2 lg:col-span-1">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 mb-2" />
+            <h3 className="font-medium text-gray-900 text-sm sm:text-base">New Batch</h3>
+            <p className="text-xs sm:text-sm text-gray-600">Start a new learning batch</p>
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/auth/LoginPage';
 import BusinessDashboard from './components/business/BusinessDashboard';
@@ -8,39 +9,67 @@ import Header from './components/layout/Header';
 
 function AppContent() {
   const { user, isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [showMenu, setShowMenu] = useState(true); // default: visible on desktop
+  const [showMenu, setShowMenu] = useState(false); // Mobile-first: hidden by default
 
   if (!isAuthenticated) {
     return <LoginPage />;
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      {showMenu && (
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          showMenu={showMenu}
-          setShowMenu={setShowMenu}
-        />
-      )}
+    <Router>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Mobile Overlay */}
+        {showMenu && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+            onClick={() => setShowMenu(false)}
+          />
+        )}
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        <Header 
-        showMenu={showMenu}
-        setShowMenu={setShowMenu} />
-        <main className="flex-1 overflow-auto p-4">
-          {user?.role === 'business' ? (
-            <BusinessDashboard activeTab={activeTab} setActiveTab={setActiveTab} />
-          ) : (
-            <TeacherDashboard activeTab={activeTab} setActiveTab={setActiveTab} />
-          )}
-        </main>
+        {/* Sidebar */}
+        <div className={`
+          fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+          ${showMenu ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          <Sidebar
+            showMenu={showMenu}
+            setShowMenu={setShowMenu}
+          />
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header 
+            showMenu={showMenu}
+            setShowMenu={setShowMenu} 
+          />
+          <main className="flex-1 overflow-auto">
+            <Routes>
+              {user?.role === 'business' ? (
+                <>
+                  <Route path="/dashboard" element={<BusinessDashboard />} />
+                  <Route path="/teachers" element={<BusinessDashboard />} />
+                  <Route path="/courses" element={<BusinessDashboard />} />
+                  <Route path="/batches" element={<BusinessDashboard />} />
+                  <Route path="/lectures" element={<BusinessDashboard />} />
+                  <Route path="/analytics" element={<BusinessDashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                </>
+              ) : (
+                <>
+                  <Route path="/dashboard" element={<TeacherDashboard />} />
+                  <Route path="/my-courses" element={<TeacherDashboard />} />
+                  <Route path="/lectures" element={<TeacherDashboard />} />
+                  <Route path="/progress" element={<TeacherDashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                </>
+              )}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 }
 
