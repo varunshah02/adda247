@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ showMenu, setShowMenu }) => {
     <div className="h-full bg-white shadow-lg border-r border-gray-200 flex flex-col">
       {/* Logo + Close button */}
       <div className="p-4 sm:p-6 border-b border-gray-200 flex justify-between items-center">
-        <img src={Logo} alt="EduTracker Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
+        <img src={Logo} alt="EduTracker Logo" className="w-[50] h-[50] object-contain" />
         <button
           onClick={() => setShowMenu(false)}
           className="lg:hidden p-2 rounded hover:bg-gray-100 transition-colors"

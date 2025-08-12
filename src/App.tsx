@@ -45,7 +45,7 @@ function AppContent() {
           />
           <main className="flex-1 overflow-auto">
             <Routes>
-              {user?.role === 'business' ? (
+              {user?.role === 'business'? (
                 <>
                   <Route path="/dashboard" element={<BusinessDashboard />} />
                   <Route path="/teachers" element={<BusinessDashboard />} />

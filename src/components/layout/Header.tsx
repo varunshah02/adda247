@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, LogOut, Menu } from 'lucide-react';
+import { Bell, Settings, LogOut, Menu, UserCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ setShowMenu, showMenu }) => {
   const { user, logout } = useAuth();
+
 
   return (
     <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
@@ -24,9 +25,9 @@ const Header: React.FC<HeaderProps> = ({ setShowMenu, showMenu }) => {
           
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
-              Welcome back, {user?.name}
+              Welcome back
             </h2>
-            <p className="text-sm sm:text-base text-gray-600 capitalize hidden sm:block">
+            <p className="text-md sm:text-base text-gray-600 capitalize sm:block">
               {user?.role} Dashboard
             </p>
           </div>
@@ -46,13 +47,11 @@ const Header: React.FC<HeaderProps> = ({ setShowMenu, showMenu }) => {
 
           {/* User Profile */}
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <img
-              src={user?.avatar || `https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150`}
-              alt={user?.name}
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
+            <UserCircle
+              className="w-7 h-7 object-cover"
             />
             <span className="text-sm font-medium text-gray-700 hidden sm:inline-block truncate max-w-24">
-              {user?.name}
+              {user?.firstName}
             </span>
           </div>
 
