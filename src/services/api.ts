@@ -1,9 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000/api';
+const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
 
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+  token?: string;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -15,6 +17,18 @@ export interface ApiResponse<T> {
   statusCode: number;
 }
 
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  statusCode: number;
+  token: string;
+}
+
 export interface Course {
   _id: string;
   title: string;
@@ -24,7 +38,7 @@ export interface Course {
     value: number;
     unit: string;
   };
-  status: 'active' | 'inactive' | 'draft';
+  status: "active" | "inactive" | "draft";
   createdBy: {
     _id: string;
     firstName: string;
@@ -70,7 +84,7 @@ export interface CreateCoursePayload {
     value: number;
     unit: string;
   };
-  status: 'active' | 'inactive' | 'draft';
+  status: "active" | "inactive" | "draft";
 }
 
 export interface AddSubjectPayload {
@@ -98,15 +112,24 @@ export interface AddLecturePayload {
 }
 
 class ApiService {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+
     const defaultHeaders = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      this.setCookie(token);
+    }
 
     const config: RequestInit = {
       ...options,
+      credentials: "include",
       headers: {
         ...defaultHeaders,
         ...options.headers,
@@ -115,29 +138,44 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error("API request failed:", error);
       throw error;
     }
   }
 
+  private setCookie(value: string): void {
+    if (typeof document === "undefined") return;
+
+    document.cookie = `token=${value}; path=/`;
+  }
+
+  async login(payload: LoginPayload): Promise<ApiResponse<null>> {
+    return this.request<null>("/user/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
   // Course APIs
-  async createCourse(payload: CreateCoursePayload): Promise<ApiResponse<Course>> {
-    return this.request<Course>('/course/create', {
-      method: 'POST',
+  async createCourse(
+    payload: CreateCoursePayload
+  ): Promise<ApiResponse<Course>> {
+    return this.request<Course>("/course/create", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
   async getCourses(): Promise<ApiResponse<Course[]>> {
-    return this.request<Course[]>('/course/list');
+    return this.request<Course[]>("/course/list");
   }
 
   async getCourseById(courseId: string): Promise<ApiResponse<Course>> {
@@ -146,24 +184,24 @@ class ApiService {
 
   // Subject APIs
   async addSubject(payload: AddSubjectPayload): Promise<ApiResponse<Subject>> {
-    return this.request<Subject>('/course/add-subject', {
-      method: 'POST',
+    return this.request<Subject>("/course/add-subject", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
   // Topic APIs
   async addTopic(payload: AddTopicPayload): Promise<ApiResponse<Topic>> {
-    return this.request<Topic>('/course/add-topic', {
-      method: 'POST',
+    return this.request<Topic>("/course/add-topic", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
   // Lecture APIs
   async addLecture(payload: AddLecturePayload): Promise<ApiResponse<Lecture>> {
-    return this.request<Lecture>('/course/add-lecture', {
-      method: 'POST',
+    return this.request<Lecture>("/course/add-lecture", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
   }
