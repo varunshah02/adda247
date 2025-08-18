@@ -1,4 +1,3 @@
-// components/auth/LoginPage.tsx
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Logo from "../../assets/header-logo.png";
@@ -9,14 +8,24 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { login, errorMessage } = useAuth();
+  const [error, setError] = useState("");
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await login(email, password);
-    setIsLoading(false);
+    setError("");
+
+    try {
+      const success = await login(email, password);
+      if (!success) {
+        setError("Invalid email or password");
+      }
+    } catch (err) {
+      setError("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const demoCredentials = [
@@ -25,7 +34,7 @@ const LoginPage: React.FC = () => {
       password: "Dev@1234",
       role: "Business User",
     },
-    // { email: "teacher@education.com", password: "password", role: "Teacher" },
+    { email: "teacher@education.com", password: "password", role: "Teacher" },
   ];
 
   return (
@@ -41,7 +50,12 @@ const LoginPage: React.FC = () => {
                 className="w-[50px] h-[50px] object-contain"
               />
             </div>
-            <p className="text-xl text-gray-600">Lecture Management System</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              Lecture Management System
+            </p>
           </div>
 
           {/* Login Form */}

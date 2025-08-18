@@ -1,14 +1,13 @@
-// contexts/AuthContext.tsx
-import axios from "axios";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { apiService } from "../services/api";
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber:string;
-  role: "business" | "faculty";
+  role: "business" | "teacher";
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -45,37 +44,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setErrorMessage(null); // clear old errors
+    // Mock authentication - in real app, this would call an API
+    const mockUsers = [
+      {
+        id: "1",
+        name: "John Admin",
+        email: "admin@education.com",
+        role: "business" as const,
+        avatar:
+          "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150",
+      },
+      {
+        id: "2",
+        name: "Sarah Teacher",
+        email: "teacher@education.com",
+        role: "teacher" as const,
+        avatar:
+          "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?w=150",
+      },
+    ];
 
-    try {
-      const loginRes = await axios.post(
-        `${import.meta.env.VITE_BACKEND_API}/user/login`,
-        { email, password },
-        { withCredentials: true }
-      );
+    // const foundUser = mockUsers.find((u) => u.email === email);
+    // if (foundUser && password === "password") {
+    //   setUser(foundUser);
+    //   setIsAuthenticated(true);
+    //   localStorage.setItem("user", JSON.stringify(foundUser));
+    //   return true;
+    // }
 
-      if (loginRes.status === 200) {
-        const userRes = await axios.get(
-          `${import.meta.env.VITE_BACKEND_API}/user`,
-          { withCredentials: true }
-        );
+    const response = await apiService.login({ email, password });
 
-        if (userRes.data) {
-          setUser(userRes.data.data);
-          localStorage.setItem("user", JSON.stringify(userRes.data));
-        }
-
-        setIsAuthenticated(true);
-        return true;
-      }
-    } catch (error: any) {
-      const errMsg =
-        error.response?.data?.message ||
-        error.response?.data ||
-        error.message ||
-        "Login failed";
-      setErrorMessage(errMsg);
-      console.error("Login error:", errMsg);
+    if (response && response.token) {
+      localStorage.setItem("token", response.token);
+      setUser(mockUsers[0]);
+      setIsAuthenticated(true);
+      return true;
     }
 
     return false;

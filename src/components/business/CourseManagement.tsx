@@ -1,84 +1,81 @@
 import React, { useState } from 'react';
-import { Plus, Search, Edit, Trash2, Clock, Users, CheckCircle } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Clock, Users, CheckCircle, Eye } from 'lucide-react';
+import { apiService, Course, CreateCoursePayload } from '../../services/api';
 
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  topics: Topic[];
-  assignedTeachers: string[];
-  totalStudents: number;
-  completionRate: number;
-  status: 'active' | 'draft' | 'archived';
-  createdDate: string;
-}
-
-interface Topic {
-  id: string;
-  title: string;
-  description: string;
-  isCompleted: boolean;
-  estimatedHours: number;
-}
+import CourseDetails from './CourseDetails';
 
 const CourseManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data
-  const courses: Course[] = [
-    {
-      id: '1',
-      title: 'Advanced Mathematics',
-      description: 'Comprehensive mathematics course covering algebra, calculus, and statistics',
-      duration: '6 months',
-      topics: [
-        { id: '1', title: 'Linear Algebra', description: 'Matrices and vectors', isCompleted: true, estimatedHours: 20 },
-        { id: '2', title: 'Calculus I', description: 'Differential calculus', isCompleted: true, estimatedHours: 25 },
-        { id: '3', title: 'Calculus II', description: 'Integral calculus', isCompleted: false, estimatedHours: 25 },
-        { id: '4', title: 'Statistics', description: 'Descriptive and inferential statistics', isCompleted: false, estimatedHours: 30 }
-      ],
-      assignedTeachers: ['Sarah Johnson', 'Michael Brown'],
-      totalStudents: 45,
-      completionRate: 65,
-      status: 'active',
-      createdDate: '2023-01-15'
-    },
-    {
-      id: '2',
-      title: 'Organic Chemistry',
-      description: 'Study of carbon compounds and their reactions',
-      duration: '4 months',
-      topics: [
-        { id: '5', title: 'Hydrocarbons', description: 'Alkanes, alkenes, and alkynes', isCompleted: true, estimatedHours: 15 },
-        { id: '6', title: 'Functional Groups', description: 'Alcohols, aldehydes, ketones', isCompleted: false, estimatedHours: 20 },
-        { id: '7', title: 'Reaction Mechanisms', description: 'Understanding organic reactions', isCompleted: false, estimatedHours: 25 }
-      ],
-      assignedTeachers: ['Michael Brown'],
-      totalStudents: 32,
-      completionRate: 40,
-      status: 'active',
-      createdDate: '2023-02-10'
-    },
-    {
-      id: '3',
-      title: 'Creative Writing',
-      description: 'Developing writing skills across various genres',
-      duration: '3 months',
-      topics: [
-        { id: '8', title: 'Poetry', description: 'Forms and techniques in poetry', isCompleted: true, estimatedHours: 12 },
-        { id: '9', title: 'Short Stories', description: 'Narrative structure and character development', isCompleted: true, estimatedHours: 18 },
-        { id: '10', title: 'Essay Writing', description: 'Argumentative and descriptive essays', isCompleted: true, estimatedHours: 15 }
-      ],
-      assignedTeachers: ['Emily Davis'],
-      totalStudents: 28,
-      completionRate: 90,
-      status: 'active',
-      createdDate: '2023-03-01'
+  // Form state
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    courseCode: '',
+    durationValue: 1,
+    durationUnit: 'months',
+    status: 'active' as 'active' | 'inactive' | 'draft'
+  });
+
+  React.useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getCourses();
+      if (response.success) {
+        setCourses(response.data);
+      }
+    } catch (error) {
+      setError('Failed to fetch courses');
+      console.error('Error fetching courses:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleCreateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const payload: CreateCoursePayload = {
+        title: formData.title,
+        description: formData.description,
+        courseCode: formData.courseCode,
+        duration: {
+          value: formData.durationValue,
+          unit: formData.durationUnit
+        },
+        status: formData.status
+      };
+
+      const response = await apiService.createCourse(payload);
+      if (response.success) {
+        setShowAddModal(false);
+        setFormData({
+          title: '',
+          description: '',
+          courseCode: '',
+          durationValue: 1,
+          durationUnit: 'months',
+          status: 'active'
+        });
+        fetchCourses(); // Refresh the list
+      }
+    } catch (error) {
+      setError('Failed to create course');
+      console.error('Error creating course:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,12 +88,22 @@ const CourseManagement: React.FC = () => {
         return 'bg-green-100 text-green-800';
       case 'draft':
         return 'bg-yellow-100 text-yellow-800';
-      case 'archived':
+      case 'inactive':
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (selectedCourse) {
+    return (
+      <CourseDetails 
+        course={selectedCourse} 
+        onBack={() => setSelectedCourse(null)}
+        onUpdate={fetchCourses}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -113,6 +120,12 @@ const CourseManagement: React.FC = () => {
           <span>Create Course</span>
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -131,20 +144,28 @@ const CourseManagement: React.FC = () => {
             <option value="">All Status</option>
             <option value="active">Active</option>
             <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
       </div>
 
+      {loading && (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+          <p className="mt-2 text-gray-600">Loading courses...</p>
+        </div>
+      )}
+
       {/* Courses Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredCourses.map((course) => (
-          <div key={course.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+          <div key={course._id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{course.title}</h3>
                   <p className="text-gray-600 text-sm mb-3">{course.description}</p>
+                  <p className="text-gray-500 text-xs mb-3">Code: {course.courseCode}</p>
                   <span className={`inline-block px-2 py-1 text-xs rounded-full ${getStatusColor(course.status)}`}>
                     {course.status}
                   </span>
@@ -164,81 +185,65 @@ const CourseManagement: React.FC = () => {
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-1 text-sm text-gray-600">
                     <Clock className="w-4 h-4" />
-                    <span>{course.duration}</span>
+                    <span>{course.duration.value} {course.duration.unit}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Duration</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-1 text-sm text-gray-600">
                     <Users className="w-4 h-4" />
-                    <span>{course.totalStudents}</span>
+                    <span>{course.subjects.length}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Students</p>
+                  <p className="text-xs text-gray-500 mt-1">Subjects</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center space-x-1 text-sm text-gray-600">
                     <CheckCircle className="w-4 h-4" />
-                    <span>{course.completionRate}%</span>
+                    <span>{course.subjects.reduce((acc, subject) => acc + subject.topics.length, 0)}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Complete</p>
+                  <p className="text-xs text-gray-500 mt-1">Topics</p>
                 </div>
               </div>
 
-              {/* Progress Bar */}
+              {/* Subjects Preview */}
               <div className="mb-4">
-                <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="text-gray-600">Progress</span>
-                  <span className="font-medium text-gray-900">{course.completionRate}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-red-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${course.completionRate}%` }}
-                  ></div>
-                </div>
-              </div>
-
-              {/* Topics Preview */}
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">
-                  Topics ({course.topics.filter(t => t.isCompleted).length}/{course.topics.length} completed)
-                </h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Subjects</h4>
                 <div className="space-y-1">
-                  {course.topics.slice(0, 3).map((topic) => (
-                    <div key={topic.id} className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className={`w-4 h-4 ${topic.isCompleted ? 'text-green-600' : 'text-gray-300'}`} />
-                      <span className={topic.isCompleted ? 'text-gray-600 line-through' : 'text-gray-900'}>
-                        {topic.title}
+                  {course.subjects.slice(0, 3).map((subject) => (
+                    <div key={subject._id} className="flex items-center space-x-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                      <span className="text-gray-900">
+                        {subject.title}
                       </span>
                     </div>
                   ))}
-                  {course.topics.length > 3 && (
-                    <p className="text-xs text-gray-500 ml-6">+{course.topics.length - 3} more topics</p>
+                  {course.subjects.length > 3 && (
+                    <p className="text-xs text-gray-500 ml-6">+{course.subjects.length - 3} more subjects</p>
+                  )}
+                  {course.subjects.length === 0 && (
+                    <p className="text-xs text-gray-500">No subjects added yet</p>
                   )}
                 </div>
               </div>
 
-              {/* Teachers */}
+              {/* Created By */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Assigned Teachers</h4>
-                <div className="flex flex-wrap gap-2">
-                  {course.assignedTeachers.map((teacher, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-50 text-blue-800 text-xs rounded-full">
-                      {teacher}
-                    </span>
-                  ))}
-                </div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Created By</h4>
+                <p className="text-sm text-gray-600">
+                  {course.createdBy.firstName} {course.createdBy.lastName}
+                </p>
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                 <span className="text-xs text-gray-500">
-                  Created {new Date(course.createdDate).toLocaleDateString()}
+                  Created {new Date(course.createdAt).toLocaleDateString()}
                 </span>
                 <button
                   onClick={() => setSelectedCourse(course)}
-                  className="text-sm text-red-600 hover:text-red-800 font-medium"
+                  className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-800 font-medium"
                 >
-                  View Details
+                  <Eye className="w-4 h-4" />
+                  <span>View Details</span>
                 </button>
               </div>
             </div>
@@ -249,69 +254,88 @@ const CourseManagement: React.FC = () => {
       {/* Add Course Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Course</h2>
-            <form className="space-y-4">
+            <form onSubmit={handleCreateCourse} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
                 <input
                   type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Enter course title"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Enter course description"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
+                <input
+                  type="text"
+                  value={formData.courseCode}
+                  onChange={(e) => setFormData({ ...formData, courseCode: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  placeholder="e.g., SSC101"
+                  required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration Value</label>
                   <input
-                    type="text"
+                    type="number"
+                    min="1"
+                    value={formData.durationValue}
+                    onChange={(e) => setFormData({ ...formData, durationValue: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="e.g., 6 months"
+                    placeholder="6"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                    <option value="draft">Draft</option>
-                    <option value="active">Active</option>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration Unit</label>
+                  <select 
+                    value={formData.durationUnit}
+                    onChange={(e) => setFormData({ ...formData, durationUnit: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  >
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Topics/Roadmap</label>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="Topic 1"
-                  />
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    placeholder="Topic 2"
-                  />
-                  <button
-                    type="button"
-                    className="text-sm text-red-600 hover:text-red-800 font-medium"
-                  >
-                    + Add Another Topic
-                  </button>
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select 
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' | 'draft' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
               <div className="flex items-center space-x-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={loading}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  Create Course
+                  {loading ? 'Creating...' : 'Create Course'}
                 </button>
                 <button
                   type="button"
