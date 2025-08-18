@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Clock, Users, CheckCircle, Eye } from 'lucide-react';
-import { apiService, Course, CreateCoursePayload } from '../../services/api';
+import { apiService, Course, CreateCoursePayload, UpdateCoursePayload } from '../../services/api';
 
 import CourseDetails from './CourseDetails';
 
@@ -11,6 +11,7 @@ const CourseManagement: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -75,6 +76,72 @@ const CourseManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setFormData({
+      title: course.title,
+      description: course.description,
+      courseCode: course.courseCode,
+      durationValue: course.duration.value,
+      durationUnit: course.duration.unit,
+      status: course.status
+    });
+    setShowAddModal(true);
+  };
+
+  const handleUpdateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCourse) return;
+
+    try {
+      setLoading(true);
+      const payload: UpdateCoursePayload = {
+        courseId: editingCourse._id,
+        title: formData.title,
+        description: formData.description,
+        courseCode: formData.courseCode,
+        duration: {
+          value: formData.durationValue,
+          unit: formData.durationUnit
+        },
+        status: formData.status
+      };
+
+      const response = await apiService.updateCourse(payload);
+      if (response.success) {
+        setShowAddModal(false);
+        setEditingCourse(null);
+        setFormData({
+          title: '',
+          description: '',
+          courseCode: '',
+          durationValue: 1,
+          durationUnit: 'months',
+          status: 'active'
+        });
+        fetchCourses(); // Refresh the list
+      }
+    } catch (error) {
+      setError('Failed to update course');
+      console.error('Error updating course:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowAddModal(false);
+    setEditingCourse(null);
+    setFormData({
+      title: '',
+      description: '',
+      courseCode: '',
+      durationValue: 1,
+      durationUnit: 'months',
+      status: 'active'
+    });
   };
 
   const filteredCourses = courses.filter(course =>
@@ -172,7 +239,12 @@ const CourseManagement: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button className="p-1 text-gray-400 hover:text-blue-600 transition-colors">
+                    <button 
+                      onClick={() => handleEditCourse(course)}
+                      className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                    >
                     <Edit className="w-4 h-4" />
+                    </button>
                   </button>
                   <button className="p-1 text-gray-400 hover:text-red-600 transition-colors">
                     <Trash2 className="w-4 h-4" />
@@ -255,8 +327,10 @@ const CourseManagement: React.FC = () => {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Course</h2>
-            <form onSubmit={handleCreateCourse} className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              {editingCourse ? 'Edit Course' : 'Create New Course'}
+            </h2>
+            <form onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
                 <input
@@ -335,11 +409,11 @@ const CourseManagement: React.FC = () => {
                   disabled={loading}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Creating...' : 'Create Course'}
+                  {loading ? (editingCourse ? 'Updating...' : 'Creating...') : (editingCourse ? 'Update Course' : 'Create Course')}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={handleModalClose}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel

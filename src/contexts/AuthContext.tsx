@@ -1,12 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { apiService } from "../services/api";
+import { apiService, User as ApiUser } from "../services/api";
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: "business" | "teacher";
-  avatar?: string;
+  role: "business" | "faculty";
 }
 
 interface AuthContextType {
@@ -33,49 +32,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Try to get current user details
+      apiService.getCurrentUser()
+        .then(response => {
+          if (response.success) {
+            const apiUser = response.data;
+            const user: User = {
+              id: apiUser._id,
+              name: `${apiUser.firstName} ${apiUser.lastName}`,
+              email: apiUser.email,
+              role: apiUser.role === "faculty" ? "faculty" : "business"
+            };
+            setUser(user);
+            setIsAuthenticated(true);
+          }
+        })
+        .catch(() => {
+          // Token might be invalid, clear it
+          localStorage.removeItem("token");
+        });
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - in real app, this would call an API
-    const mockUsers = [
-      {
-        id: "1",
-        name: "John Admin",
-        email: "admin@education.com",
-        role: "business" as const,
-        avatar:
-          "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?w=150",
-      },
-      {
-        id: "2",
-        name: "Sarah Teacher",
-        email: "teacher@education.com",
-        role: "teacher" as const,
-        avatar:
-          "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?w=150",
-      },
-    ];
+    try {
+      const response = await apiService.login({ email, password });
 
-    // const foundUser = mockUsers.find((u) => u.email === email);
-    // if (foundUser && password === "password") {
-    //   setUser(foundUser);
-    //   setIsAuthenticated(true);
-    //   localStorage.setItem("user", JSON.stringify(foundUser));
-    //   return true;
-    // }
-
-    const response = await apiService.login({ email, password });
-
-    if (response && response.token) {
-      localStorage.setItem("token", response.token);
-      setUser(mockUsers[0]);
-      setIsAuthenticated(true);
-      return true;
+      if (response.success && response.token) {
+        localStorage.setItem("token", response.token);
+        
+        // Get user details
+        const userResponse = await apiService.getCurrentUser();
+        if (userResponse.success) {
+          const apiUser = userResponse.data;
+          const user: User = {
+            id: apiUser._id,
+            name: `${apiUser.firstName} ${apiUser.lastName}`,
+            email: apiUser.email,
+            role: apiUser.role === "faculty" ? "faculty" : "business"
+          };
+          setUser(user);
+          setIsAuthenticated(true);
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
     }
 
     return false;
@@ -84,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (

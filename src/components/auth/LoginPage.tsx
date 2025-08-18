@@ -32,9 +32,13 @@ const LoginPage: React.FC = () => {
     {
       email: "varunshah735@gmail.com",
       password: "Dev@1234",
-      role: "Business User",
+      role: "Business User"
     },
-    { email: "teacher@education.com", password: "password", role: "Teacher" },
+    { 
+      email: "faculty@gmail.com", 
+      password: "Faculty@1234", 
+      role: "Faculty" 
+    }
   ];
 
   return (

@@ -29,6 +29,44 @@ export interface LoginResponse {
   token: string;
 }
 
+export interface User {
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: "business" | "faculty";
+  phoneNumber: string;
+  facultyProfile?: {
+    employeeId?: string;
+    department?: string;
+    specialization?: string[];
+    experience?: number;
+    qualification?: string;
+    joiningDate?: string;
+    isActive: boolean;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserPayload {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: "business" | "faculty";
+  phoneNumber: string;
+  facultyProfile?: {
+    employeeId?: string;
+    department?: string;
+    specialization?: string[];
+    experience?: number;
+    qualification?: string;
+    joiningDate?: string;
+    isActive?: boolean;
+  };
+}
+
 export interface Course {
   _id: string;
   title: string;
@@ -87,8 +125,28 @@ export interface CreateCoursePayload {
   status: "active" | "inactive" | "draft";
 }
 
+export interface UpdateCoursePayload {
+  courseId: string;
+  title: string;
+  description: string;
+  courseCode: string;
+  duration: {
+    value: number;
+    unit: string;
+  };
+  status: "active" | "inactive" | "draft";
+}
+
 export interface AddSubjectPayload {
   courseId: string;
+  title: string;
+  description: string;
+  order: number;
+}
+
+export interface UpdateSubjectPayload {
+  courseId: string;
+  subjectId: string;
   title: string;
   description: string;
   order: number;
@@ -102,6 +160,15 @@ export interface AddTopicPayload {
   order: number;
 }
 
+export interface UpdateTopicPayload {
+  courseId: string;
+  subjectId: string;
+  topicId: string;
+  title: string;
+  description: string;
+  estimatedHours?: number;
+}
+
 export interface AddLecturePayload {
   courseId: string;
   subjectId: string;
@@ -109,6 +176,16 @@ export interface AddLecturePayload {
   title: string;
   description: string;
   order: number;
+}
+
+export interface UpdateLecturePayload {
+  courseId: string;
+  subjectId: string;
+  topicId: string;
+  lectureId: string;
+  title: string;
+  description: string;
+  durationMinutes: number;
 }
 
 class ApiService {
@@ -157,8 +234,25 @@ class ApiService {
     document.cookie = `token=${value}; path=/`;
   }
 
+  // Auth APIs
   async login(payload: LoginPayload): Promise<ApiResponse<null>> {
     return this.request<null>("/user/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // User APIs
+  async getCurrentUser(): Promise<ApiResponse<User>> {
+    return this.request<User>("/user");
+  }
+
+  async getAllUsers(): Promise<ApiResponse<User[]>> {
+    return this.request<User[]>("/user/list");
+  }
+
+  async createUser(payload: CreateUserPayload): Promise<ApiResponse<User>> {
+    return this.request<User>("/user/register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -182,26 +276,54 @@ class ApiService {
     return this.request<Course>(`/course/${courseId}`);
   }
 
+  async updateCourse(payload: UpdateCoursePayload): Promise<ApiResponse<Course>> {
+    return this.request<Course>("/course/update", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
   // Subject APIs
-  async addSubject(payload: AddSubjectPayload): Promise<ApiResponse<Subject>> {
-    return this.request<Subject>("/course/add-subject", {
+  async addSubject(payload: AddSubjectPayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/add-subject", {
       method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateSubject(payload: UpdateSubjectPayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/update/subject", {
+      method: "PUT",
       body: JSON.stringify(payload),
     });
   }
 
   // Topic APIs
-  async addTopic(payload: AddTopicPayload): Promise<ApiResponse<Topic>> {
-    return this.request<Topic>("/course/add-topic", {
+  async addTopic(payload: AddTopicPayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/add-topic", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   }
 
+  async updateTopic(payload: UpdateTopicPayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/update/topic", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  }
+
   // Lecture APIs
-  async addLecture(payload: AddLecturePayload): Promise<ApiResponse<Lecture>> {
-    return this.request<Lecture>("/course/add-lecture", {
+  async addLecture(payload: AddLecturePayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/add-lecture", {
       method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateLecture(payload: UpdateLecturePayload): Promise<ApiResponse<any>> {
+    return this.request<any>("/course/update/lecture", {
+      method: "PUT",
       body: JSON.stringify(payload),
     });
   }

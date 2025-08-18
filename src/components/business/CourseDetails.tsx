@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit, Trash2, ChevronDown, ChevronRight, BookOpen, Clock, Play } from 'lucide-react';
-import { Course, Subject, Topic, Lecture, apiService, AddSubjectPayload, AddTopicPayload, AddLecturePayload } from '../../services/api';
+import { Course, Subject, Topic, Lecture, apiService, AddSubjectPayload, AddTopicPayload, AddLecturePayload, UpdateSubjectPayload, UpdateTopicPayload, UpdateLecturePayload } from '../../services/api';
 
 interface CourseDetailsProps {
   course: Course;
@@ -19,6 +19,9 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
+  const [editingLecture, setEditingLecture] = useState<Lecture | null>(null);
 
   // Form states
   const [subjectForm, setSubjectForm] = useState({
@@ -38,6 +41,15 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
     description: '',
     order: 1
   });
+
+  const resetForms = () => {
+    setSubjectForm({ title: '', description: '', order: 1 });
+    setTopicForm({ title: '', description: '', order: 1 });
+    setLectureForm({ title: '', description: '', order: 1 });
+    setEditingSubject(null);
+    setEditingTopic(null);
+    setEditingLecture(null);
+  };
 
   useEffect(() => {
     fetchCourseDetails();
@@ -104,6 +116,129 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
     }
   };
 
+  const handleEditSubject = (subject: Subject) => {
+    setEditingSubject(subject);
+    setSubjectForm({
+      title: subject.title,
+      description: subject.description,
+      order: subject.order
+    });
+    setShowAddSubjectModal(true);
+  };
+
+  const handleUpdateSubject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSubject) return;
+
+    try {
+      setLoading(true);
+      const payload: UpdateSubjectPayload = {
+        courseId: course._id,
+        subjectId: editingSubject._id,
+        title: subjectForm.title,
+        description: subjectForm.description,
+        order: subjectForm.order
+      };
+
+      const response = await apiService.updateSubject(payload);
+      if (response.success) {
+        setShowAddSubjectModal(false);
+        resetForms();
+        fetchCourseDetails();
+        onUpdate();
+      }
+    } catch (error) {
+      setError('Failed to update subject');
+      console.error('Error updating subject:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditTopic = (subject: Subject, topic: Topic) => {
+    setSelectedSubject(subject);
+    setEditingTopic(topic);
+    setTopicForm({
+      title: topic.title,
+      description: topic.description,
+      order: topic.order
+    });
+    setShowAddTopicModal(true);
+  };
+
+  const handleUpdateTopic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubject || !editingTopic) return;
+
+    try {
+      setLoading(true);
+      const payload: UpdateTopicPayload = {
+        courseId: course._id,
+        subjectId: selectedSubject._id,
+        topicId: editingTopic._id,
+        title: topicForm.title,
+        description: topicForm.description,
+        estimatedHours: 1 // Default value
+      };
+
+      const response = await apiService.updateTopic(payload);
+      if (response.success) {
+        setShowAddTopicModal(false);
+        resetForms();
+        fetchCourseDetails();
+        onUpdate();
+      }
+    } catch (error) {
+      setError('Failed to update topic');
+      console.error('Error updating topic:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditLecture = (subject: Subject, topic: Topic, lecture: Lecture) => {
+    setSelectedSubject(subject);
+    setSelectedTopic(topic);
+    setEditingLecture(lecture);
+    setLectureForm({
+      title: lecture.title,
+      description: lecture.description,
+      order: lecture.order
+    });
+    setShowAddLectureModal(true);
+  };
+
+  const handleUpdateLecture = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSubject || !selectedTopic || !editingLecture) return;
+
+    try {
+      setLoading(true);
+      const payload: UpdateLecturePayload = {
+        courseId: course._id,
+        subjectId: selectedSubject._id,
+        topicId: selectedTopic._id,
+        lectureId: editingLecture._id,
+        title: lectureForm.title,
+        description: lectureForm.description,
+        durationMinutes: 60 // Default value
+      };
+
+      const response = await apiService.updateLecture(payload);
+      if (response.success) {
+        setShowAddLectureModal(false);
+        resetForms();
+        fetchCourseDetails();
+        onUpdate();
+      }
+    } catch (error) {
+      setError('Failed to update lecture');
+      console.error('Error updating lecture:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddTopic = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedSubject) return;
@@ -122,7 +257,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
       if (response.success) {
         setShowAddTopicModal(false);
         setTopicForm({ title: '', description: '', order: 1 });
-        setSelectedSubject(null);
+        resetForms();
         fetchCourseDetails();
         onUpdate();
       }
@@ -153,8 +288,7 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
       if (response.success) {
         setShowAddLectureModal(false);
         setLectureForm({ title: '', description: '', order: 1 });
-        setSelectedSubject(null);
-        setSelectedTopic(null);
+        resetForms();
         fetchCourseDetails();
         onUpdate();
       }
@@ -333,7 +467,10 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                         >
                           <Plus className="w-4 h-4" />
                         </button>
-                        <button className="p-1 text-gray-400 hover:text-blue-600">
+                        <button 
+                          onClick={() => handleEditSubject(subject)}
+                          className="p-1 text-gray-400 hover:text-blue-600"
+                        >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button className="p-1 text-gray-400 hover:text-red-600">
@@ -393,7 +530,10 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                                     >
                                       <Plus className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1 text-gray-400 hover:text-blue-600">
+                                    <button 
+                                      onClick={() => handleEditTopic(subject, topic)}
+                                      className="p-1 text-gray-400 hover:text-blue-600"
+                                    >
                                       <Edit className="w-4 h-4" />
                                     </button>
                                     <button className="p-1 text-gray-400 hover:text-red-600">
@@ -429,7 +569,10 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                                             </p>
                                           </div>
                                           <div className="flex items-center space-x-1">
-                                            <button className="p-1 text-gray-400 hover:text-blue-600">
+                                            <button 
+                                              onClick={() => handleEditLecture(subject, topic, lecture)}
+                                              className="p-1 text-gray-400 hover:text-blue-600"
+                                            >
                                               <Edit className="w-3 h-3" />
                                             </button>
                                             <button className="p-1 text-gray-400 hover:text-red-600">
@@ -459,8 +602,10 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
       {showAddSubjectModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Subject</h2>
-            <form onSubmit={handleAddSubject} className="space-y-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              {editingSubject ? 'Edit Subject' : 'Add Subject'}
+            </h2>
+            <form onSubmit={editingSubject ? handleUpdateSubject : handleAddSubject} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Subject Title</label>
                 <input
@@ -500,11 +645,14 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                   disabled={loading}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Adding...' : 'Add Subject'}
+                  {loading ? (editingSubject ? 'Updating...' : 'Adding...') : (editingSubject ? 'Update Subject' : 'Add Subject')}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowAddSubjectModal(false)}
+                  onClick={() => {
+                    setShowAddSubjectModal(false);
+                    resetForms();
+                  }}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
                   Cancel
@@ -520,9 +668,9 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Add Topic to "{selectedSubject.title}"
+              {editingTopic ? 'Edit Topic' : `Add Topic to "${selectedSubject.title}"`}
             </h2>
-            <form onSubmit={handleAddTopic} className="space-y-4">
+            <form onSubmit={editingTopic ? handleUpdateTopic : handleAddTopic} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Topic Title</label>
                 <input
@@ -562,13 +710,13 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                   disabled={loading}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Adding...' : 'Add Topic'}
+                  {loading ? (editingTopic ? 'Updating...' : 'Adding...') : (editingTopic ? 'Update Topic' : 'Add Topic')}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddTopicModal(false);
-                    setSelectedSubject(null);
+                    resetForms();
                   }}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
@@ -585,9 +733,9 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Add Lecture to "{selectedTopic.title}"
+              {editingLecture ? 'Edit Lecture' : `Add Lecture to "${selectedTopic.title}"`}
             </h2>
-            <form onSubmit={handleAddLecture} className="space-y-4">
+            <form onSubmit={editingLecture ? handleUpdateLecture : handleAddLecture} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Lecture Title</label>
                 <input
@@ -627,14 +775,13 @@ const CourseDetails: React.FC<CourseDetailsProps> = ({ course: initialCourse, on
                   disabled={loading}
                   className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Adding...' : 'Add Lecture'}
+                  {loading ? (editingLecture ? 'Updating...' : 'Adding...') : (editingLecture ? 'Update Lecture' : 'Add Lecture')}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setShowAddLectureModal(false);
-                    setSelectedSubject(null);
-                    setSelectedTopic(null);
+                    resetForms();
                   }}
                   className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
                 >
