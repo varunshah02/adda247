@@ -188,6 +188,48 @@ export interface UpdateLecturePayload {
   durationMinutes: number;
 }
 
+export interface Batch {
+  _id: string;
+  name: string;
+  courseTemplateId: string;
+  startDate: string;
+  endDate: string;
+  subjects: BatchSubject[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchSubject {
+  _id: string;
+  subjectId: string;
+  title: string;
+  facultyId: string;
+  totalLectures: number;
+  topics: BatchTopic[];
+}
+
+export interface BatchTopic {
+  _id: string;
+  topicId: string;
+  title: string;
+  facultyId: string;
+  lectures: BatchLecture[];
+}
+
+export interface BatchLecture {
+  _id: string;
+  lectureId: string;
+  title: string;
+  facultyId: string;
+}
+
+export interface CreateBatchPayload {
+  name: string;
+  courseTemplateId: string;
+  startDate: string;
+  facultyAssignments: Record<string, string>; // subjectId -> facultyId mapping
+}
+
 class ApiService {
   private async request<T>(
     endpoint: string,
@@ -326,6 +368,18 @@ class ApiService {
       method: "PUT",
       body: JSON.stringify(payload),
     });
+  }
+
+  // Batch APIs
+  async createBatch(payload: CreateBatchPayload): Promise<ApiResponse<Batch>> {
+    return this.request<Batch>("/batch/create", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getBatches(): Promise<ApiResponse<Batch[]>> {
+    return this.request<Batch[]>("/batch/list");
   }
 }
 
