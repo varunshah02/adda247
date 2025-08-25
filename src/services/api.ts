@@ -17,6 +17,15 @@ export interface ApiResponse<T> {
   statusCode: number;
 }
 
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  status?: string;
+}
+
 export interface LoginPayload {
   email: string;
   password: string;
@@ -310,15 +319,39 @@ class ApiService {
     });
   }
 
-  async getCourses(): Promise<ApiResponse<Course[]>> {
-    return this.request<Course[]>("/course/list");
+  // async getCourses(): Promise<ApiResponse<Course[]>> {
+  //   return this.request<Course[]>("/course/list");
+  // }
+  async getCourses(
+    pagination?: PaginationParams
+  ): Promise<ApiResponse<Course[]>> {
+    const params = new URLSearchParams();
+
+    if (pagination) {
+      if (pagination.page) params.append("page", pagination.page.toString());
+      if (pagination.limit) params.append("limit", pagination.limit.toString());
+      if (pagination.sortBy) params.append("sortBy", pagination.sortBy);
+      if (pagination.sortOrder)
+        params.append("sortOrder", pagination.sortOrder);
+      if (pagination.search) params.append("search", pagination.search);
+      if (pagination.status) params.append("status", pagination.status);
+    }
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/course/list?${queryString}`
+      : "/course/list";
+
+    return this.request<Course[]>(endpoint);
   }
 
   async getCourseById(courseId: string): Promise<ApiResponse<Course>> {
     return this.request<Course>(`/course/${courseId}`);
   }
 
-  async updateCourse(payload: UpdateCoursePayload): Promise<ApiResponse<Course>> {
+  async updateCourse(
+    payload: UpdateCoursePayload
+  ): Promise<ApiResponse<Course>> {
     return this.request<Course>("/course/update", {
       method: "PUT",
       body: JSON.stringify(payload),
@@ -333,7 +366,9 @@ class ApiService {
     });
   }
 
-  async updateSubject(payload: UpdateSubjectPayload): Promise<ApiResponse<any>> {
+  async updateSubject(
+    payload: UpdateSubjectPayload
+  ): Promise<ApiResponse<any>> {
     return this.request<any>("/course/update/subject", {
       method: "PUT",
       body: JSON.stringify(payload),
@@ -363,7 +398,9 @@ class ApiService {
     });
   }
 
-  async updateLecture(payload: UpdateLecturePayload): Promise<ApiResponse<any>> {
+  async updateLecture(
+    payload: UpdateLecturePayload
+  ): Promise<ApiResponse<any>> {
     return this.request<any>("/course/update/lecture", {
       method: "PUT",
       body: JSON.stringify(payload),
