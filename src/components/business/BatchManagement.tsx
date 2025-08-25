@@ -83,6 +83,21 @@ const BatchManagement: React.FC = () => {
     }
   };
 
+  function getStatusColor(status: string) {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "upcoming":
+        return "bg-blue-100 text-blue-800";
+      case "expiring":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  }
+
   const handleCourseSelect = (courseId: string) => {
     const course = courses.find((c) => c._id === courseId);
     setSelectedCourse(course || null);
@@ -240,12 +255,12 @@ const BatchManagement: React.FC = () => {
                         <AlertTriangle className="w-5 h-5 text-yellow-600" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{batch.course}</p>
+                    {/* <p className="text-sm text-gray-600 mb-2">{batch.course}</p>
                     <span
                       className={`inline-block px-2 py-1 text-xs rounded-full ${getStatusColor(
                         batch.status
                       )}`}
-                    />
+                    /> */}
                     <span
                       className={`inline-block px-2 py-1 text-xs rounded-full ${batchStatus.color}`}
                     >
