@@ -34,7 +34,7 @@ const CourseManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const itemsPerPage = 10; // Fixed at 10 items per page
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [statusFilter, setStatusFilter] = useState("");
@@ -198,11 +198,6 @@ const CourseManagement: React.FC = () => {
     setCurrentPage(page);
   };
 
-  const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit);
-    setCurrentPage(1); // Reset to first page
-  };
-
   const handleSortChange = (field: string) => {
     if (field === sortBy) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -298,16 +293,6 @@ const CourseManagement: React.FC = () => {
             <option value="title-asc">Title A-Z</option>
             <option value="title-desc">Title Z-A</option>
             <option value="status-asc">Status A-Z</option>
-          </select>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-          >
-            <option value={5}>5 per page</option>
-            <option value={10}>10 per page</option>
-            <option value={20}>20 per page</option>
-            <option value={50}>50 per page</option>
           </select>
         </div>
 
